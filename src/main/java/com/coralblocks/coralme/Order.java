@@ -213,6 +213,30 @@ public class Order {
         this.priceLevel = priceLevel;
     }
 
+    public final long getAcceptTime() {
+        return acceptTime;
+    }
+
+    public final long getRestTime() {
+        return restTime;
+    }
+
+    public final long getOriginalSize() {
+        return originalSize;
+    }
+
+    public final long getExecuteTime() {
+        return executeTime;
+    }
+
+    public final long getCancelTime() {
+        return cancelTime;
+    }
+
+    public final long getRejectTime() {
+        return rejectTime;
+    }
+
     public void reduceTo(long time, long newTotalSize) {
 
     	if (newTotalSize <= executedSize) {

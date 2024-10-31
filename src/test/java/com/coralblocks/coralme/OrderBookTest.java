@@ -24,32 +24,33 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.coralblocks.coralme.Order.CancelReason;
-import com.coralblocks.coralme.Order.ExecuteSide;
-import com.coralblocks.coralme.Order.RejectReason;
-import com.coralblocks.coralme.Order.Side;
-import com.coralblocks.coralme.Order.TimeInForce;
+import com.coralblocks.coralme.CancelReason;
+import com.coralblocks.coralme.ExecuteSide;
+import com.coralblocks.coralme.RejectReason;
+import com.coralblocks.coralme.Side;
+import com.coralblocks.coralme.TimeInForce;
+import com.coralblocks.coralme.Type;
 import com.coralblocks.coralme.util.DoubleUtils;
 
 public class OrderBookTest {
-	
+
 	private static final long CLIENT_ID = 1002L;
-	
+
 	private OrderBookListener called(OrderBookListener listener, int times) {
 		return Mockito.verify(listener, Mockito.times(times));
 	}
-	
+
 	private void done(OrderBookListener listener) {
 		Mockito.verifyNoMoreInteractions(listener);
 		Mockito.clearInvocations(listener);
 	}
-	
+
 	private void clear(OrderBookListener listener) {
 		Mockito.clearInvocations(listener);
 	}
-	
+
 	private static class OrderExecutedCaptor {
-		
+
 		ArgumentCaptor<OrderBook> 		book = ArgumentCaptor.forClass(OrderBook.class);
 		ArgumentCaptor<Long> 			time = ArgumentCaptor.forClass(Long.class);
 		ArgumentCaptor<Order> 			order = ArgumentCaptor.forClass(Order.class);
@@ -59,16 +60,16 @@ public class OrderBookTest {
 		ArgumentCaptor<Long>  			executeId = ArgumentCaptor.forClass(Long.class);
 		ArgumentCaptor<Long>  			executeMatchId = ArgumentCaptor.forClass(Long.class);
 	}
-	
+
 	@Test
 	public void test_Order_Accepted() {
-		
+
 		OrderBookListener listener = Mockito.mock(OrderBookListener.class);
-		
+
 		OrderBook book = new OrderBook("AAPL", listener);
-		
+
 		Order order = book.createLimit(CLIENT_ID, "1", 1, Side.BUY, 800, 432.12, TimeInForce.DAY);
-		
+
 		called(listener, 1).onOrderAccepted(book, order.getAcceptTime(), order);
 		called(listener, 0).onOrderCanceled(null, 0, null, null);
 		called(listener, 0).onOrderExecuted(null, 0, null, null, 0, 0, 0, 0);
@@ -76,20 +77,20 @@ public class OrderBookTest {
 		called(listener, 0).onOrderRejected(null, 0, null, null);
 		called(listener, 1).onOrderRested(book, order.getRestTime(), order, order.getOriginalSize(), order.getPrice());
 		called(listener, 0).onOrderTerminated(null, 0, null);
-		
+
 		done(listener);
 	}
-	
+
 	@Test
 	public void test_Order_Rejected_Due_To_Price() {
-		
+
 		OrderBookListener listener = Mockito.mock(OrderBookListener.class);
-		
+
 		OrderBook book = new OrderBook("AAPL", listener);
-		
+
 		// Market order cannot have a price
-		Order order = book.createOrder(CLIENT_ID, "1", 1, Side.BUY, 800, DoubleUtils.toLong(432.12), Order.Type.MARKET, TimeInForce.DAY);
-		
+		Order order = book.createOrder(CLIENT_ID, "1", 1, Side.BUY, 800, DoubleUtils.toLong(432.12), Type.MARKET, TimeInForce.DAY);
+
 		called(listener, 0).onOrderAccepted(null, 0, null);
 		called(listener, 0).onOrderCanceled(null, 0, null, null);
 		called(listener, 0).onOrderExecuted(null, 0, null, null, 0, 0, 0, 0);
@@ -97,15 +98,15 @@ public class OrderBookTest {
 		called(listener, 1).onOrderRejected(book, order.getRejectTime(), order, RejectReason.BAD_PRICE);
 		called(listener, 0).onOrderRested(null, 0, null, 0, 0);
 		called(listener, 0).onOrderTerminated(null, 0, null);
-		
+
 		done(listener);
 	}
-	
+
 	@Test
 	public void test_Order_Rejected_Due_To_Odd_Lot() {
-		
+
 		OrderBookListener listener = Mockito.mock(OrderBookListener.class);
-		
+
 		OrderBook book = new OrderBook("AAPL", listener) {
 			@Override
 			protected RejectReason validateOrder(Order order) {
@@ -115,9 +116,9 @@ public class OrderBookTest {
 				return null;
 			}
 		};
-		
+
 		Order order = book.createLimit(CLIENT_ID, "1", 1, Side.BUY, 800, 432.12, TimeInForce.DAY);
-		
+
 		called(listener, 1).onOrderAccepted(book, order.getAcceptTime(), order);
 		called(listener, 0).onOrderCanceled(null, 0, null, null);
 		called(listener, 0).onOrderExecuted(null, 0, null, null, 0, 0, 0, 0);
@@ -125,12 +126,12 @@ public class OrderBookTest {
 		called(listener, 0).onOrderRejected(null, 0, null, null);
 		called(listener, 1).onOrderRested(book, order.getRestTime(), order, order.getOriginalSize(), order.getPrice());
 		called(listener, 0).onOrderTerminated(null, 0, null);
-		
+
 		done(listener);
-		
+
 		// Odd lot not accepted...
 		order = book.createLimit(CLIENT_ID, "2", 2, Side.SELL, 850, 432.12, TimeInForce.DAY);
-		
+
 		called(listener, 0).onOrderAccepted(null, 0, null);
 		called(listener, 0).onOrderCanceled(null, 0, null, null);
 		called(listener, 0).onOrderExecuted(null, 0, null, null, 0, 0, 0, 0);
@@ -138,19 +139,19 @@ public class OrderBookTest {
 		called(listener, 1).onOrderRejected(book, order.getRejectTime(), order, RejectReason.BAD_LOT);
 		called(listener, 0).onOrderRested(null, 0, null, 0, 0);
 		called(listener, 0).onOrderTerminated(null, 0, null);
-		
+
 		done(listener);
 	}
-	
+
 	@Test
 	public void test_IoC_Order_Misses() {
-		
+
 		OrderBookListener listener = Mockito.mock(OrderBookListener.class);
-		
+
 		OrderBook book = new OrderBook("AAPL", listener);
-		
+
 		Order order = book.createLimit(CLIENT_ID, "1", 1, Side.BUY, 800, 432.12, TimeInForce.DAY);
-		
+
 		called(listener, 1).onOrderAccepted(book, order.getAcceptTime(), order);
 		called(listener, 0).onOrderCanceled(null, 0, null, null);
 		called(listener, 0).onOrderExecuted(null, 0, null, null, 0, 0, 0, 0);
@@ -158,11 +159,11 @@ public class OrderBookTest {
 		called(listener, 0).onOrderRejected(null, 0, null, null);
 		called(listener, 1).onOrderRested(book, order.getRestTime(), order, order.getOriginalSize(), order.getPrice());
 		called(listener, 0).onOrderTerminated(null, 0, null);
-		
+
 		done(listener);
-		
+
 		order = book.createLimit(CLIENT_ID, "2", 2, Side.SELL, 100, 432.13, TimeInForce.IOC);
-		
+
 		called(listener, 1).onOrderAccepted(book, order.getAcceptTime(), order);
 		called(listener, 1).onOrderCanceled(book, order.getCancelTime(), order, CancelReason.MISSED);
 		called(listener, 0).onOrderExecuted(null, 0, null, null, 0, 0, 0, 0);
@@ -170,19 +171,19 @@ public class OrderBookTest {
 		called(listener, 0).onOrderRejected(null, 0, null, null);
 		called(listener, 0).onOrderRested(null,0, null, 0, 0);
 		called(listener, 1).onOrderTerminated(book, order.getCancelTime(), order);
-		
+
 		done(listener);
 	}
-	
+
 	@Test
 	public void test_Limit_Order_Rests() {
-		
+
 		OrderBookListener listener = Mockito.mock(OrderBookListener.class);
-		
+
 		OrderBook book = new OrderBook("AAPL", listener);
-		
+
 		Order order = book.createLimit(CLIENT_ID, "1", 1, Side.BUY, 800, 432.12, TimeInForce.DAY);
-		
+
 		called(listener, 1).onOrderAccepted(book, order.getAcceptTime(), order);
 		called(listener, 0).onOrderCanceled(null, 0, null, null);
 		called(listener, 0).onOrderExecuted(null, 0, null, null, 0, 0, 0, 0);
