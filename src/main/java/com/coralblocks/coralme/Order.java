@@ -111,6 +111,44 @@ public class Order {
         this.next = this.prev = null;
     }
 
+    public void addListener(OrderListener listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+
+    public void accept(long time, long id) {
+        this.id = id;
+        this.acceptTime = time;
+        int x = listeners.size();
+        for(int i = x - 1; i >= 0; i--) {
+            listeners.get(i).onOrderAccepted(time, this);
+        }
+    }
+
+    public void rest(long time) {
+        this.isResting = true;
+        this.restTime = time;
+        int x = listeners.size();
+        for(int i = x - 1; i >= 0; i--) {
+            listeners.get(i).onOrderRested(time, this, getOpenSize(), getPrice());
+        }
+    }
+
+    public void reject(long time, RejectReason reason) {
+        this.totalSize = this.executedSize = 0;
+        this.rejectTime = time;
+        int x = listeners.size();
+        for(int i = x - 1; i >= 0; i--) {
+            listeners.get(i).onOrderRejected(time, this, reason);
+        }
+        listeners.clear();
+    }
+
+    public final Side getOtherSide() {
+        return side == Side.BUY ? Side.SELL : Side.BUY;
+    }
+
     public final long getOpenSize() {
         return totalSize - executedSize;
     }
