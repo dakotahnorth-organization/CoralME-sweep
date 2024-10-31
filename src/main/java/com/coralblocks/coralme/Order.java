@@ -85,7 +85,96 @@ public class Order {
     public Order() {
 
     }
-    
+
+    public void init(long clientId, CharSequence clientOrderId, long exchangeOrderId, String security, Side side, long size, long price, Type type, TimeInForce tif) {
+        this.clientId = clientId;
+        this.clientOrderId.setLength(0);
+        this.clientOrderId.append(clientOrderId);
+        this.side = side;
+        this.type = type;
+        this.originalSize = this.totalSize = size;
+        this.price = price;
+        this.executedSize = 0;
+        this.security = security;
+        this.id = exchangeOrderId;
+        this.acceptTime = -1;
+        this.restTime = -1;
+        this.reduceTime = -1;
+        this.executeTime = -1;
+        this.cancelTime = -1;
+        this.rejectTime = -1;
+        this.priceLevel = null;
+        this.tif = tif;
+        this.isResting = false;
+        this.isPendingCancel = false;
+        this.pendingSize = -1;
+        this.next = this.prev = null;
+    }
+
+    public final long getOpenSize() {
+        return totalSize - executedSize;
+    }
+
+    public final long getCanceledSize() {
+        return originalSize - getOpenSize() - executedSize;
+    }
+
+    public final boolean isTerminal() {
+        return getOpenSize() == 0;
+    }
+
+    public final void setPendingCancel() {
+        this.isPendingCancel = true;
+    }
+
+    public final boolean isPendingCancel() {
+        return isPendingCancel;
+    }
+
+    public final boolean isResting() {
+        return isResting;
+    }
+
+    public final Side getSide() {
+        return side;
+    }
+
+    public final long getId() {
+        return id;
+    }
+
+    public final long getClientId() {
+        return clientId;
+    }
+
+    public final CharSequence getClientOrderId() {
+        return clientOrderId;
+    }
+
+    public final String getSecurity() {
+        return security;
+    }
+
+    public final Type getType() {
+        return type;
+    }
+
+    public final TimeInForce getTimeInForce() {
+        return tif;
+    }
+
+    public final long getPrice() {
+        return price;
+    }
+
+    public final PriceLevel getPriceLevel() {
+        return priceLevel;
+    }
+
+    public final void setPriceLevel(PriceLevel priceLevel) {
+        this.priceLevel = priceLevel;
+    }
+
     public void reduceTo(long time, long newTotalSize) {
 
     	if (newTotalSize <= executedSize) {
@@ -199,7 +288,7 @@ public class Order {
     		listeners.clear();
     	}
     }
-	
+
     /**
      * This method of course produces garbage and should be used only for debugging purposes.
      * Use toCharSequence(StringBuilder) instead in order to avoid producing garbage.
