@@ -15,24 +15,24 @@
  */
 package com.coralblocks.coralme;
 
-import com.coralblocks.coralme.Order.CancelReason;
-import com.coralblocks.coralme.Order.ExecuteSide;
-import com.coralblocks.coralme.Order.RejectReason;
+import com.coralblocks.coralme.CancelReason;
+import com.coralblocks.coralme.ExecuteSide;
+import com.coralblocks.coralme.RejectReason;
 
 public interface OrderListener {
-    
+
     public void onOrderReduced(long time, Order order, long reduceNewTotalSize);
-    
+
     public void onOrderCanceled(long time, Order order, CancelReason cancelReason);
-    
+
     public void onOrderExecuted(long time, Order order, ExecuteSide executeSide, long executeSize, long executePrice, long executeId, long executeMatchId);
-    
+
     public void onOrderAccepted(long time, Order order);
-    
+
     public void onOrderRejected(long time, Order order, RejectReason rejectReason);
-    
+
     public void onOrderRested(long time, Order order, long restSize, long restPrice);
-    
+
     public void onOrderTerminated(long time, Order order);
-    
+
 }

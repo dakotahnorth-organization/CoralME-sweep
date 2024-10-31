@@ -15,41 +15,41 @@
  */
 package com.coralblocks.coralme;
 
-import com.coralblocks.coralme.Order.CancelReason;
-import com.coralblocks.coralme.Order.ExecuteSide;
-import com.coralblocks.coralme.Order.RejectReason;
+import com.coralblocks.coralme.CancelReason;
+import com.coralblocks.coralme.ExecuteSide;
+import com.coralblocks.coralme.RejectReason;
 import com.coralblocks.coralme.util.DoubleUtils;
 
 /**
- * This is a simple OrderBookListener that prints its callbacks to System.out for debugging. 
+ * This is a simple OrderBookListener that prints its callbacks to System.out for debugging.
  */
 public class OrderBookLogger implements OrderBookListener {
-	
+
 	private boolean isOn = true;
-	
+
 	/**
 	 * Turns on logging to System.out
 	 */
 	public void on() {
 		isOn = true;
 	}
-	
+
 	/**
 	 * Turns off logging to System.out
 	 */
 	public void off() {
 		isOn = false;
 	}
-	
+
 	/**
 	 * Is currently logging to System.out?
-	 * 
+	 *
 	 * @return true if logging
 	 */
 	public boolean isOn() {
 		return isOn;
 	}
-    
+
 	@Override
     public void onOrderReduced(OrderBook orderBook, long time, Order order, long reduceNewTotalSize) {
 		if (!isOn) return;
@@ -60,7 +60,7 @@ public class OrderBookLogger implements OrderBookListener {
     	System.out.println("  reduceNewTotalSize=" + reduceNewTotalSize);
     	System.out.println();
     }
-    
+
 	@Override
     public void onOrderCanceled(OrderBook orderBook, long time, Order order, CancelReason cancelReason) {
 		if (!isOn) return;
@@ -71,7 +71,7 @@ public class OrderBookLogger implements OrderBookListener {
     	System.out.println("  cancelReason=" + cancelReason);
     	System.out.println();
     }
-    
+
 	@Override
     public void onOrderExecuted(OrderBook orderBook, long time, Order order, ExecuteSide executeSide, long executeSize, long executePrice, long executeId, long executeMatchId) {
 		if (!isOn) return;
@@ -84,9 +84,9 @@ public class OrderBookLogger implements OrderBookListener {
     	System.out.println("  executePrice=" + DoubleUtils.toDouble(executePrice));
     	System.out.println("  executeId=" + executeId);
     	System.out.println("  executeMatchId=" + executeMatchId);
-    	System.out.println();    	
+    	System.out.println();
     }
-    
+
 	@Override
     public void onOrderAccepted(OrderBook orderBook, long time, Order order) {
 		if (!isOn) return;
@@ -96,7 +96,7 @@ public class OrderBookLogger implements OrderBookListener {
     	System.out.println("  order=" + order);
     	System.out.println();
     }
-    
+
 	@Override
     public void onOrderRejected(OrderBook orderBook, long time, Order order, RejectReason rejectReason) {
 		if (!isOn) return;
@@ -107,7 +107,7 @@ public class OrderBookLogger implements OrderBookListener {
     	System.out.println("  rejectReason=" + rejectReason);
     	System.out.println();
     }
-    
+
 	@Override
     public void onOrderRested(OrderBook orderBook, long time, Order order, long restSize, long restPrice) {
 		if (!isOn) return;

@@ -15,44 +15,44 @@
  */
 package com.coralblocks.coralme;
 
-import com.coralblocks.coralme.Order.CancelReason;
-import com.coralblocks.coralme.Order.ExecuteSide;
-import com.coralblocks.coralme.Order.RejectReason;
+import com.coralblocks.coralme.CancelReason;
+import com.coralblocks.coralme.ExecuteSide;
+import com.coralblocks.coralme.RejectReason;
 
 public class OrderBookAdapter implements OrderBookListener {
-    
+
 	@Override
     public void onOrderReduced(OrderBook orderBook, long time, Order order, long reduceNewTotalSize) {
-    	
+
     }
-    
+
 	@Override
     public void onOrderCanceled(OrderBook orderBook, long time, Order order, CancelReason cancelReason) {
-    	
+
     }
-    
+
 	@Override
     public void onOrderExecuted(OrderBook orderBook, long time, Order order, ExecuteSide executeSide, long executeSize, long executePrice, long executeId, long executeMatchId) {
-    	
+
     }
-    
+
 	@Override
     public void onOrderAccepted(OrderBook orderBook, long time, Order order) {
-    	
+
     }
-    
+
 	@Override
     public void onOrderRejected(OrderBook orderBook, long time, Order order, RejectReason rejectReason) {
-    	
+
     }
-    
+
 	@Override
     public void onOrderRested(OrderBook orderBook, long time, Order order, long restSize, long restPrice) {
-    	
+
     }
 
 	@Override
 	public void onOrderTerminated(OrderBook orderBook, long time, Order order) {
-		
+
 	}
 }

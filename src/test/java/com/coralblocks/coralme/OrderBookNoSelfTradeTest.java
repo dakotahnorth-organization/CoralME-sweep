@@ -21,29 +21,30 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.coralblocks.coralme.Order.CancelReason;
-import com.coralblocks.coralme.Order.ExecuteSide;
-import com.coralblocks.coralme.Order.Side;
-import com.coralblocks.coralme.Order.TimeInForce;
+import com.coralblocks.coralme.CancelReason;
+import com.coralblocks.coralme.ExecuteSide;
+import com.coralblocks.coralme.Side;
+import com.coralblocks.coralme.TimeInForce;
+import com.coralblocks.coralme.Type;
 import com.coralblocks.coralme.util.DoubleUtils;
 
 
 public class OrderBookNoSelfTradeTest {
-	
+
 	private static final long CID_1 = 1005L;
 	private static final long CID_2 = 1006L;
-	
+
 	private OrderBookListener called(OrderBookListener listener, int times) {
 		return Mockito.verify(listener, Mockito.times(times));
 	}
-	
+
 	private void done(OrderBookListener listener) {
 		Mockito.verifyNoMoreInteractions(listener);
 		Mockito.clearInvocations(listener);
 	}
-	
+
 	private static class OrderExecutedCaptor {
-		
+
 		ArgumentCaptor<OrderBook> 		book = ArgumentCaptor.forClass(OrderBook.class);
 		ArgumentCaptor<Long> 			time = ArgumentCaptor.forClass(Long.class);
 		ArgumentCaptor<Order> 			order = ArgumentCaptor.forClass(Order.class);
@@ -53,16 +54,16 @@ public class OrderBookNoSelfTradeTest {
 		ArgumentCaptor<Long>  			executeId = ArgumentCaptor.forClass(Long.class);
 		ArgumentCaptor<Long>  			executeMatchId = ArgumentCaptor.forClass(Long.class);
 	}
-	
+
 	@Test
 	public void test_Limit_Order_Fills_With_Price_Improvement() {
-		
+
 		OrderBookListener listener = Mockito.mock(OrderBookListener.class);
-		
+
 		OrderBook book = new OrderBook("AAPL", listener, false); // <=== NO TRADE_TO_SELF
-		
+
 		Order buyOrder = book.createLimit(CID_1, "1", 1, Side.BUY, 800, 432.12, TimeInForce.DAY);
-		
+
 		called(listener, 1).onOrderAccepted(book, buyOrder.getAcceptTime(), buyOrder);
 		called(listener, 0).onOrderCanceled(null, 0, null, null);
 		called(listener, 0).onOrderExecuted(null, 0, null, null, 0, 0, 0, 0);
@@ -70,25 +71,25 @@ public class OrderBookNoSelfTradeTest {
 		called(listener, 0).onOrderRejected(null, 0, null, null);
 		called(listener, 1).onOrderRested(book, buyOrder.getRestTime(), buyOrder, buyOrder.getOriginalSize(), buyOrder.getPrice());
 		called(listener, 0).onOrderTerminated(null, 0, null);
-		
+
 		done(listener);
 
 		OrderExecutedCaptor captor = new OrderExecutedCaptor();
-		
+
 		Order sellOrder = book.createLimit(CID_2, "1", 2, Side.SELL, 100, 430.00, TimeInForce.DAY);
-		
+
 		called(listener, 1).onOrderAccepted(book, sellOrder.getAcceptTime(), sellOrder);
 		called(listener, 0).onOrderCanceled(null, 0, null, null);
-		called(listener, 2).onOrderExecuted(captor.book.capture(), captor.time.capture(), captor.order.capture(), captor.executeSide.capture(), 
-											captor.executeSize.capture(), captor.executePrice.capture(), captor.executeId.capture(), 
+		called(listener, 2).onOrderExecuted(captor.book.capture(), captor.time.capture(), captor.order.capture(), captor.executeSide.capture(),
+											captor.executeSize.capture(), captor.executePrice.capture(), captor.executeId.capture(),
 											captor.executeMatchId.capture());
 		called(listener, 0).onOrderReduced(null, 0, null, 0);
 		called(listener, 0).onOrderRejected(null, 0, null, null);
 		called(listener, 0).onOrderRested(null, 0, null, 0, 0);
 		called(listener, 1).onOrderTerminated(book, sellOrder.getExecuteTime(), sellOrder);
-		
+
 		done(listener);
-		
+
 		assertEquals(book, captor.book.getAllValues().get(0));
 		assertEquals(buyOrder.getExecuteTime(), captor.time.getAllValues().get(0).longValue());
 		assertEquals(buyOrder, captor.order.getAllValues().get(0));
@@ -97,7 +98,7 @@ public class OrderBookNoSelfTradeTest {
 		assertEquals(DoubleUtils.toLong(432.12), captor.executePrice.getAllValues().get(0).longValue());
 		assertEquals(1, captor.executeId.getAllValues().get(0).longValue());
 		assertEquals(1, captor.executeMatchId.getAllValues().get(0).longValue());
-		
+
 		assertEquals(book, captor.book.getAllValues().get(1));
 		assertEquals(sellOrder.getExecuteTime(), captor.time.getAllValues().get(1).longValue());
 		assertEquals(sellOrder, captor.order.getAllValues().get(1));
@@ -106,24 +107,24 @@ public class OrderBookNoSelfTradeTest {
 		assertEquals(DoubleUtils.toLong(432.12), captor.executePrice.getAllValues().get(1).longValue());
 		assertEquals(2, captor.executeId.getAllValues().get(1).longValue());
 		assertEquals(1, captor.executeMatchId.getAllValues().get(1).longValue());
-		
+
 		Mockito.reset(listener);
 		captor = new OrderExecutedCaptor();
-		
+
 		sellOrder = book.createLimit(CID_2, "2", 3, Side.SELL, 100, 430.00, TimeInForce.DAY);
-		
+
 		called(listener, 1).onOrderAccepted(book, sellOrder.getAcceptTime(), sellOrder);
 		called(listener, 0).onOrderCanceled(null, 0, null, null);
-		called(listener, 2).onOrderExecuted(captor.book.capture(), captor.time.capture(), captor.order.capture(), captor.executeSide.capture(), 
-											captor.executeSize.capture(), captor.executePrice.capture(), captor.executeId.capture(), 
+		called(listener, 2).onOrderExecuted(captor.book.capture(), captor.time.capture(), captor.order.capture(), captor.executeSide.capture(),
+											captor.executeSize.capture(), captor.executePrice.capture(), captor.executeId.capture(),
 											captor.executeMatchId.capture());
 		called(listener, 0).onOrderReduced(null, 0, null, 0);
 		called(listener, 0).onOrderRejected(null, 0, null, null);
 		called(listener, 0).onOrderRested(null, 0, null, 0, 0);
 		called(listener, 1).onOrderTerminated(book, sellOrder.getExecuteTime(), sellOrder);
-		
+
 		done(listener);
-		
+
 		assertEquals(book, captor.book.getAllValues().get(0));
 		assertEquals(buyOrder.getExecuteTime(), captor.time.getAllValues().get(0).longValue());
 		assertEquals(buyOrder, captor.order.getAllValues().get(0));
@@ -132,7 +133,7 @@ public class OrderBookNoSelfTradeTest {
 		assertEquals(DoubleUtils.toLong(432.12), captor.executePrice.getAllValues().get(0).longValue());
 		assertEquals(3, captor.executeId.getAllValues().get(0).longValue());
 		assertEquals(2, captor.executeMatchId.getAllValues().get(0).longValue());
-		
+
 		assertEquals(book, captor.book.getAllValues().get(1));
 		assertEquals(sellOrder.getExecuteTime(), captor.time.getAllValues().get(1).longValue());
 		assertEquals(sellOrder, captor.order.getAllValues().get(1));
@@ -142,34 +143,34 @@ public class OrderBookNoSelfTradeTest {
 		assertEquals(4, captor.executeId.getAllValues().get(1).longValue());
 		assertEquals(2, captor.executeMatchId.getAllValues().get(1).longValue());
 	}
-	
+
 	@Test
 	public void test_IoC_Partial_Fill() {
-		
+
 		OrderBookListener listener = Mockito.mock(OrderBookListener.class);
-		
+
 		OrderBook book = new OrderBook("AAPL", listener, false); // <=== NO TRADE_TO_SELF
-		
+
 		Order buyOrder = book.createLimit(CID_1, "1", 1, Side.BUY, 800, 432.12, TimeInForce.DAY);
 		book.createLimit(CID_1, "2", 2, Side.BUY, 400, 432.11, TimeInForce.DAY);
-		
+
 		Mockito.reset(listener);
 		OrderExecutedCaptor captor = new OrderExecutedCaptor();
-		
+
 		Order sellOrder = book.createLimit(CID_2, "1", 3, Side.SELL, 1000, 432.12, TimeInForce.IOC);
-		
+
 		called(listener, 1).onOrderAccepted(book, sellOrder.getAcceptTime(), sellOrder);
 		called(listener, 1).onOrderCanceled(book, sellOrder.getCancelTime(), sellOrder, CancelReason.MISSED);
-		called(listener, 2).onOrderExecuted(captor.book.capture(), captor.time.capture(), captor.order.capture(), captor.executeSide.capture(), 
-											captor.executeSize.capture(), captor.executePrice.capture(), captor.executeId.capture(), 
+		called(listener, 2).onOrderExecuted(captor.book.capture(), captor.time.capture(), captor.order.capture(), captor.executeSide.capture(),
+											captor.executeSize.capture(), captor.executePrice.capture(), captor.executeId.capture(),
 											captor.executeMatchId.capture());
 		called(listener, 0).onOrderReduced(null, 0, null, 0);
 		called(listener, 0).onOrderRejected(null, 0, null, null);
 		called(listener, 0).onOrderRested(null, 0, null, 0, 0);
 		called(listener, 2).onOrderTerminated(captor.book.capture(), captor.time.capture(), captor.order.capture());
-		
+
 		done(listener);
-		
+
 		assertEquals(book, captor.book.getAllValues().get(0));
 		assertEquals(buyOrder.getExecuteTime(), captor.time.getAllValues().get(0).longValue());
 		assertEquals(buyOrder, captor.order.getAllValues().get(0));
@@ -178,7 +179,7 @@ public class OrderBookNoSelfTradeTest {
 		assertEquals(DoubleUtils.toLong(432.12), captor.executePrice.getAllValues().get(0).longValue());
 		assertEquals(1, captor.executeId.getAllValues().get(0).longValue());
 		assertEquals(1, captor.executeMatchId.getAllValues().get(0).longValue());
-		
+
 		assertEquals(book, captor.book.getAllValues().get(1));
 		assertEquals(sellOrder.getExecuteTime(), captor.time.getAllValues().get(1).longValue());
 		assertEquals(sellOrder, captor.order.getAllValues().get(1));
