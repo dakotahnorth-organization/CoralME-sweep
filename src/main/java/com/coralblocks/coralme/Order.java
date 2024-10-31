@@ -237,6 +237,18 @@ public class Order {
         return rejectTime;
     }
 
+    public final long getReduceTime() {
+        return reduceTime;
+    }
+
+    public final boolean isDay() {
+        return tif == TimeInForce.DAY;
+    }
+
+    public final boolean isGTC() {
+        return tif == TimeInForce.GTC;
+    }
+
     public void reduceTo(long time, long newTotalSize) {
 
     	if (newTotalSize <= executedSize) {
